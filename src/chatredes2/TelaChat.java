@@ -5,6 +5,12 @@
  */
 package chatredes2;
 
+import java.io.File;
+import javafx.scene.control.Alert;
+import javax.swing.JTree;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreePath;
+
 /**
  *
  * @author Nailton
@@ -14,6 +20,8 @@ public class TelaChat extends javax.swing.JFrame {
     /**
      * Creates new form TelaCliente
      */
+    private DefaultMutableTreeNode raiz;
+
     public TelaChat() {
         initComponents();
     }
@@ -36,10 +44,10 @@ public class TelaChat extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         jLabel_Destinatario = new javax.swing.JLabel();
         jTabbedPane_Chat = new javax.swing.JTabbedPane();
-        jScrollPane1 = new javax.swing.JScrollPane();
+        jScrollPane_Chat = new javax.swing.JScrollPane();
         jTextArea_HistoricoChat = new javax.swing.JTextArea();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        jTree1 = new javax.swing.JTree();
+        jScrollPane_ListaArquivos = new javax.swing.JScrollPane();
+        jTree_ListaArquivos = new javax.swing.JTree();
         jButton1 = new javax.swing.JButton();
         jLabel_Status = new javax.swing.JLabel();
         jRadioButton_on = new javax.swing.JRadioButton();
@@ -48,6 +56,11 @@ public class TelaChat extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         jButton_Enviar.setText("Enviar");
+        jButton_Enviar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton_EnviarActionPerformed(evt);
+            }
+        });
 
         jList_Participantes.setModel(new javax.swing.AbstractListModel<String>() {
             String[] strings = { "Todos", "Item 2", "Item 3", "Item 4", "Item 5" };
@@ -66,17 +79,30 @@ public class TelaChat extends javax.swing.JFrame {
         jLabel_Destinatario.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
         jLabel_Destinatario.setText("Todos");
 
+        jTabbedPane_Chat.addContainerListener(new java.awt.event.ContainerAdapter() {
+            public void componentAdded(java.awt.event.ContainerEvent evt) {
+                jTabbedPane_ChatComponentAdded(evt);
+            }
+        });
+
         jTextArea_HistoricoChat.setColumns(20);
         jTextArea_HistoricoChat.setRows(5);
         jTextArea_HistoricoChat.setCursor(new java.awt.Cursor(java.awt.Cursor.TEXT_CURSOR));
         jTextArea_HistoricoChat.setEnabled(false);
-        jScrollPane1.setViewportView(jTextArea_HistoricoChat);
+        jScrollPane_Chat.setViewportView(jTextArea_HistoricoChat);
 
-        jTabbedPane_Chat.addTab("Chat", jScrollPane1);
+        jTabbedPane_Chat.addTab("Chat", jScrollPane_Chat);
 
-        jScrollPane3.setViewportView(jTree1);
+        raiz = new DefaultMutableTreeNode("Arquivos Chat");
+        JTree jTree_ListaArquivos = new JTree(raiz);
+        jTree_ListaArquivos.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
+            public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
+                jTree_ListaArquivosValueChanged(evt);
+            }
+        });
+        jScrollPane_ListaArquivos.setViewportView(jTree_ListaArquivos);
 
-        jTabbedPane_Chat.addTab("Arquivos", jScrollPane3);
+        jTabbedPane_Chat.addTab("Arquivos", jScrollPane_ListaArquivos);
 
         jButton1.setText("Sair");
 
@@ -161,6 +187,45 @@ public class TelaChat extends javax.swing.JFrame {
         jLabel_Destinatario.setText(texto);
     }//GEN-LAST:event_jList_ParticipantesValueChanged
 
+    private void jButton_EnviarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_EnviarActionPerformed
+        CriarArvoreArquivos(jTextField_Mensagem.getText(), "c:/");
+        jTextField_Mensagem.setText("");
+    }//GEN-LAST:event_jButton_EnviarActionPerformed
+
+    private void jTabbedPane_ChatComponentAdded(java.awt.event.ContainerEvent evt) {//GEN-FIRST:event_jTabbedPane_ChatComponentAdded
+        
+    }//GEN-LAST:event_jTabbedPane_ChatComponentAdded
+
+    private void jTree_ListaArquivosValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_jTree_ListaArquivosValueChanged
+        System.out.println(jTree_ListaArquivos.getSelectionPath());
+    }//GEN-LAST:event_jTree_ListaArquivosValueChanged
+
+    public void CriarArvoreArquivos(String nomeParticipante, String diretorio) {
+        DefaultMutableTreeNode pasta = new DefaultMutableTreeNode(nomeParticipante);
+        File dir = new File(diretorio);
+        File[] arquivos = dir.listFiles();
+        if (arquivos != null) {
+            int length = arquivos.length;
+            for (int i = 0; i < length; ++i) {
+                File f = arquivos[i];
+                System.out.println(f.getPath());
+                if (f.isFile()) {
+                    DefaultMutableTreeNode arquivo = new DefaultMutableTreeNode(f.getName());
+
+                    pasta.add(arquivo);
+                } else if (f.isDirectory()) {
+                    System.out.println(f.getName() + " é uma pasta!");
+                }
+            }
+        }
+        //arvoreArquivos.repaint();
+        raiz.add(pasta);
+        jTree_ListaArquivos = new JTree(raiz);
+        jScrollPane_ListaArquivos.repaint();
+        jScrollPane_ListaArquivos.setViewportView(jTree_ListaArquivos);
+         
+    }
+
     /**
      * @param args the command line arguments
      */
@@ -170,6 +235,7 @@ public class TelaChat extends javax.swing.JFrame {
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
          */
+
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
@@ -207,13 +273,13 @@ public class TelaChat extends javax.swing.JFrame {
     private javax.swing.JList<String> jList_Participantes;
     private javax.swing.JRadioButton jRadioButton_Off;
     private javax.swing.JRadioButton jRadioButton_on;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane_Chat;
+    private javax.swing.JScrollPane jScrollPane_ListaArquivos;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTabbedPane jTabbedPane_Chat;
     private javax.swing.JTextArea jTextArea_HistoricoChat;
     private javax.swing.JTextField jTextField_Mensagem;
-    private javax.swing.JTree jTree1;
+    private javax.swing.JTree jTree_ListaArquivos;
     // End of variables declaration//GEN-END:variables
 }
